@@ -468,8 +468,8 @@ body:not(.gate-open) .music-btn { opacity: 0; pointer-events: none; }
   font-size: .99rem;
   line-height: 1.78;
   color: var(--cream);
-  text-align: left;
-  text-wrap: pretty;
+  text-align: center;
+  text-wrap: balance;
 }
 
 .warm-line {
