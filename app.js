@@ -572,7 +572,7 @@
       ctx.fillStyle = DIM; ctx.font = '400 28px Montserrat, sans-serif';
       ctx.fillText('Дорноговь аймаг, Сайншанд сум', CX, footTop + 58);
       ctx.fillStyle = GOLD; ctx.font = '600 24px Montserrat, sans-serif';
-      ctx.fillText('urilga.online', CX, footTop + 104);
+      ctx.fillText('Powered by Beck', CX, footTop + 104);
       return c;
     };
 
