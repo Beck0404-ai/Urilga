@@ -621,13 +621,24 @@
     dialog.addEventListener('close', () => { resetView(); start(); });
   })();
 
-  // ---------- RSVP ----------
+  // ---------- RSVP (Telegram Bot Notification) ----------
   const form = document.getElementById('rsvp-form');
   if (form) {
     const submitBtn = form.querySelector('.submit-btn');
     const msg = document.getElementById('form-msg');
     const fail = (text) => { msg.className = 'form-msg is-err'; msg.textContent = text; };
-    form.addEventListener('submit', (e) => {
+
+    // Telegram Bot Settings
+    const TELEGRAM_BOT_TOKEN = '8491451974:AAFkxBP6-5Bumu1sethNEzS9Q_4Ix04nOlw';
+    const TELEGRAM_CHAT_ID = '5545313341';
+
+    const ATTENDANCE_MAP = {
+      'yes': '✅ Оролцоно',
+      'with_spouse': '💑 Хамтрагчтайгаа очно',
+      'no': '❌ Харамсалтай нь очиж чадахгүй'
+    };
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
       msg.className = 'form-msg'; msg.textContent = '';
       const fd = new FormData(form);
@@ -635,14 +646,44 @@
       const attendance = String(fd.get('attendance') || '');
       if (!name) { fail(MSG.nameRequired); return; }
       if (!attendance) { fail(MSG.attendanceRequired); return; }
-      
-      const rsvpList = JSON.parse(localStorage.getItem('urilga_rsvps') || '[]');
-      rsvpList.push({ name, attendance, date: new Date().toLocaleString() });
-      localStorage.setItem('urilga_rsvps', JSON.stringify(rsvpList));
 
-      msg.className = 'form-msg is-ok';
-      msg.textContent = MSG.success;
-      form.reset();
+      const attendanceLabel = ATTENDANCE_MAP[attendance] || attendance;
+      const dateText = new Date().toLocaleString('mn-MN');
+
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID && TELEGRAM_BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
+          const text = `💍 *БЭР ГУЙХ ЁСЛОЛ — ШИНЭ ХАРИУ*\n\n` +
+                       `👤 *Зочны нэр:* ${name}\n` +
+                       `📌 *Хариу:* ${attendanceLabel}\n` +
+                       `⏰ *Цаг:* ${dateText}`;
+
+          await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: TELEGRAM_CHAT_ID,
+              text: text,
+              parse_mode: 'Markdown'
+            })
+          });
+        }
+
+        const rsvpList = JSON.parse(localStorage.getItem('urilga_rsvps') || '[]');
+        rsvpList.push({ name, attendance: attendanceLabel, date: dateText });
+        localStorage.setItem('urilga_rsvps', JSON.stringify(rsvpList));
+
+        msg.className = 'form-msg is-ok';
+        msg.textContent = MSG.success;
+        form.reset();
+      } catch (err) {
+        msg.className = 'form-msg is-ok';
+        msg.textContent = MSG.success;
+        form.reset();
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
     });
   }
 })();
