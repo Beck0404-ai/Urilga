@@ -628,7 +628,6 @@
     const msg = document.getElementById('form-msg');
     const fail = (text) => { msg.className = 'form-msg is-err'; msg.textContent = text; };
 
-    // Telegram Bot Settings
     const TELEGRAM_BOT_TOKEN = '8491451974:AAFkxBP6-5Bumu1sethNEzS9Q_4Ix04nOlw';
     const TELEGRAM_CHAT_ID = '5545313341';
 
@@ -650,22 +649,35 @@
       const attendanceLabel = ATTENDANCE_MAP[attendance] || attendance;
       const dateText = new Date().toLocaleString('mn-MN');
 
-      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.7';
+      }
 
       try {
-        if (TELEGRAM_BOT_TOKEN && TELEGRAM_CHAT_ID && TELEGRAM_BOT_TOKEN !== 'YOUR_BOT_TOKEN') {
-          const text = `💍 *БЭР ГУЙХ ЁСЛОЛ — ШИНЭ ХАРИУ*\n\n` +
-                       `👤 *Зочны нэр:* ${name}\n` +
-                       `📌 *Хариу:* ${attendanceLabel}\n` +
-                       `⏰ *Цаг:* ${dateText}`;
+        const htmlText = `💍 <b>БЭР ГУЙХ ЁСЛОЛ — ШИНЭ ХАРИУ</b>\n\n` +
+                         `👤 <b>Зочны нэр:</b> ${name}\n` +
+                         `📌 <b>Хариу:</b> ${attendanceLabel}\n` +
+                         `⏰ <b>Цаг:</b> ${dateText}`;
 
+        const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: TELEGRAM_CHAT_ID,
+            text: htmlText,
+            parse_mode: 'HTML'
+          })
+        });
+
+        if (!tgRes.ok) {
+          // Fallback simple text
           await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               chat_id: TELEGRAM_CHAT_ID,
-              text: text,
-              parse_mode: 'Markdown'
+              text: `Бэр гуйх ёслол - Шинэ хариу:\nНэр: ${name}\nХариу: ${attendanceLabel}\nЦаг: ${dateText}`
             })
           });
         }
@@ -682,7 +694,10 @@
         msg.textContent = MSG.success;
         form.reset();
       } finally {
-        if (submitBtn) submitBtn.disabled = false;
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '';
+        }
       }
     });
   }
