@@ -23,13 +23,21 @@
     if (!bgMusic) return;
     bgMusic.play().then(() => {
       if (musicBtn) { musicBtn.setAttribute('aria-pressed', 'true'); setMusicLabel(true); }
-    }).catch(() => { /* blocked until a real gesture — the button still works */ });
+    }).catch(() => { /* blocked until gesture */ });
   };
   const pauseMusic = () => {
     if (!bgMusic) return;
     bgMusic.pause();
     if (musicBtn) { musicBtn.setAttribute('aria-pressed', 'false'); setMusicLabel(false); }
   };
+
+  const unlockAudio = () => {
+    if (bgMusic && bgMusic.paused) {
+      startMusic();
+    }
+  };
+  document.addEventListener('click', unlockAudio, { once: true });
+  document.addEventListener('touchstart', unlockAudio, { once: true, passive: true });
 
   // ---------- Gateway: the тооно in near-darkness, then the light blooms ----------
   const gate = document.getElementById('gate');
